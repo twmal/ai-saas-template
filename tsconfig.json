@@ -48,5 +48,5 @@
     "src/**/*",
     "tests/**/*"
   ],
-  "exclude": ["node_modules", ".next", "dist", "coverage"]
+  "exclude": ["node_modules", ".next", "dist", "coverage", "check-users.ts", "check-users.js", "scripts/**/*.ts", "scripts/**/*.js", "test-*.ts", "test-*.js", "test-*.sh"]
 }
