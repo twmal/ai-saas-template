@@ -73,11 +73,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true })
   } catch (error) {
     // Enhanced error logging
-    logger.error('❌ 处理Clerk webhook失败:', {
-      error: error instanceof Error ? error.message : String(error),
+    const errorInfo = {
+      message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       name: error instanceof Error ? error.name : '',
-    })
+    }
+    logger.error('❌ 处理Clerk webhook失败:', errorInfo as any)
 
     // Return 400 for signature verification failures, 500 for other errors
     const statusCode =

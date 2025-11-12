@@ -70,13 +70,14 @@ export function verifyClerkWebhook(
 
     return event
   } catch (error) {
-    logger.error('❌ Clerk webhook签名验证失败', {
-      error: error instanceof Error ? error.message : String(error),
-      errorName: error instanceof Error ? error.name : '',
+    const errorInfo = {
+      message: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : '',
       stack: error instanceof Error ? error.stack : undefined,
       bodyLength: body.length,
       secretLength: webhookSecret.length,
-    } as any)
+    }
+    logger.error('❌ Clerk webhook签名验证失败', errorInfo as any)
 
     // Re-throw with more context
     if (error instanceof Error) {
