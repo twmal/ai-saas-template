@@ -42,6 +42,7 @@ export default clerkMiddleware(async (auth, req: any) => {
       signInUrl.searchParams.set('redirect_url', req.nextUrl.href)
       return NextResponse.redirect(signInUrl)
     }
+    // ✅ User is authenticated - allow access to all protected routes
   }
 
   // 对于页面路由，都通过 next-intl 中间件处理

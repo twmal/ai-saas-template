@@ -1,197 +1,170 @@
 'use client'
 
-import { AuthGuardClient, UserProfileClient } from '@/components/auth'
-import {
-  MembershipStatusClient,
-  PaymentHistoryClient,
-} from '@/components/payment'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useUserMembership } from '@/hooks/use-membership'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useUser } from '@clerk/nextjs'
 import {
-  BarChart3,
-  CreditCard,
-  FileText,
-  Settings,
+  Video,
+  Youtube,
+  History,
+  Sparkles,
+  ArrowRight,
   TrendingUp,
+  Clock,
 } from 'lucide-react'
 import Link from 'next/link'
 
-function DashboardContent() {
-  const { user } = useUser()
-  const { isLoading } = useUserMembership(user?.id)
-
-  if (isLoading) {
-    return <DashboardSkeleton />
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            控制面板
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
-            欢迎回来！这里是您的个人工作台。
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* 左侧：用户资料和会员状态 */}
-          <div className="lg:col-span-1 space-y-6">
-            <UserProfileClient />
-            <MembershipStatusClient />
-          </div>
-
-          {/* 右侧：主要内容区域 */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* 快速操作区域 */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <TrendingUp className="h-5 w-5 mr-2" />
-                  快速操作
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button variant="outline" className="h-auto p-4" asChild>
-                    <Link href="/pricing">
-                      <div className="text-center">
-                        <CreditCard className="h-6 w-6 mx-auto mb-2" />
-                        <span className="text-sm">升级计划</span>
-                      </div>
-                    </Link>
-                  </Button>
-
-                  <Button variant="outline" className="h-auto p-4" asChild>
-                    <Link href="/settings">
-                      <div className="text-center">
-                        <Settings className="h-6 w-6 mx-auto mb-2" />
-                        <span className="text-sm">账户设置</span>
-                      </div>
-                    </Link>
-                  </Button>
-
-                  <Button variant="outline" className="h-auto p-4" asChild>
-                    <Link href="/payment/history">
-                      <div className="text-center">
-                        <BarChart3 className="h-6 w-6 mx-auto mb-2" />
-                        <span className="text-sm">支付历史</span>
-                      </div>
-                    </Link>
-                  </Button>
-
-                  <Button variant="outline" className="h-auto p-4" asChild>
-                    <Link href="/docs">
-                      <div className="text-center">
-                        <FileText className="h-6 w-6 mx-auto mb-2" />
-                        <span className="text-sm">查看文档</span>
-                      </div>
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 支付历史 */}
-            <PaymentHistoryClient />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <Skeleton className="h-9 w-48 mb-2" />
-        <Skeleton className="h-5 w-96" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1 space-y-6">
-          {/* 用户资料骨架 */}
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center space-x-4">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-4 w-48" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 会员状态骨架 */}
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-8 w-24 mb-4" />
-              <div className="space-y-3">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-3 space-y-6">
-          {/* 概览卡片骨架 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <Skeleton className="h-10 w-10 rounded-lg" />
-                    <div className="ml-4 space-y-2">
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="h-6 w-12" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* 快速操作骨架 */}
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-6 w-24 mb-4" />
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-20" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 支付历史骨架 */}
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-6 w-24 mb-4" />
-              <div className="space-y-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function DashboardPage() {
+  const { user } = useUser()
+
   return (
-    <AuthGuardClient requireAuth>
-      <DashboardContent />
-    </AuthGuardClient>
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Sparkles className="h-8 w-8 text-yellow-500" />
+          欢迎回来，{user?.firstName || '用户'}！
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          使用 AI 分析视频内容，自动保存到 Notion 数据库
+        </p>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">今日分析</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">
+              视频分析次数
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">本周分析</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">
+              累计分析视频
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">总计</CardTitle>
+            <History className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">
+              历史记录
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                <Video className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <CardTitle>上传视频分析</CardTitle>
+                <CardDescription>
+                  上传本地视频文件进行 AI 分析
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full" size="lg">
+              <Link href="/dashboard/video-analysis">
+                开始分析
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                <Youtube className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <CardTitle>YouTube 分析</CardTitle>
+                <CardDescription>
+                  输入 YouTube URL 进行分析
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full" size="lg" variant="outline">
+              <Link href="/dashboard/video-analysis">
+                开始分析
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            最近活动
+          </CardTitle>
+          <CardDescription>
+            您最近的视频分析记录
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12 text-muted-foreground">
+            <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>暂无分析记录</p>
+            <p className="text-sm mt-2">
+              开始上传视频或输入 YouTube URL 进行分析
+            </p>
+            <Button asChild className="mt-4" variant="outline">
+              <Link href="/dashboard/video-analysis">
+                立即开始
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Info Card */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-yellow-500" />
+            功能说明
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p>✨ 使用 Google Gemini AI 分析视频内容</p>
+          <p>📊 自动提取主题、标签、描述、热度等信息</p>
+          <p>💾 分析结果自动保存到 Notion 数据库</p>
+          <p>🎯 支持视频文件上传和 YouTube URL 分析</p>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

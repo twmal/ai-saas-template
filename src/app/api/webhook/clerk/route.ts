@@ -8,12 +8,25 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
   try {
+    // Read the raw body as text - IMPORTANT: Do this before any other body parsing
     const body = await req.text()
     const headersList = await headers()
 
+    // Log incoming webhook for debugging
+    logger.info('收到Clerk webhook请求', {
+      headers: {
+        'svix-id': headersList.get('svix-id'),
+        'svix-timestamp': headersList.get('svix-timestamp'),
+        'svix-signature': headersList.get('svix-signature') ? '***存在***' : '缺失',
+      },
+      bodyLength: body.length,
+    })
+
     // 使用真实的Clerk webhook签名验证
     const event = verifyClerkWebhook(body, headersList)
-    logger.info(`收到Clerk webhook: ${event.type}`)
+    logger.info(`✅ Clerk webhook验证成功: ${event.type}`, {
+      eventId: (event as any).id,
+    })
 
     // 处理不同类型的事件
     switch (event.type) {
@@ -59,8 +72,24 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    logger.error('处理Clerk webhook失败:', error as Error)
-    return NextResponse.json({ error: 'Webhook处理失败' }, { status: 500 })
+    // Enhanced error logging
+    logger.error('❌ 处理Clerk webhook失败:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : '',
+    })
+
+    // Return 400 for signature verification failures, 500 for other errors
+    const statusCode =
+      error instanceof Error && error.message.includes('signature') ? 400 : 500
+
+    return NextResponse.json(
+      {
+        error: 'Webhook处理失败',
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: statusCode }
+    )
   }
 }
 

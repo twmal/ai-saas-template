@@ -7,43 +7,108 @@ import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
+  type Context,
 } from '../server'
+
+/**
+ * 辅助函数：从Clerk同步用户到数据库
+ * 如果用户不存在，创建新用户；如果存在，返回现有用户
+ */
+async function ensureUserInDatabase(ctx: Context, userId: string) {
+  // 首先检查用户是否已存在
+  let user = await ctx.db.query.users.findFirst({
+    where: eq(users.id, userId),
+  })
+
+  // 如果用户已存在，直接返回
+  if (user) {
+    return user
+  }
+
+  // 用户不存在，从Clerk同步
+  ctx.logger.info('用户不存在于数据库，开始自动同步', { userId })
+
+  try {
+    const client = await clerkClient()
+    const clerkUser = await client.users.getUser(userId)
+
+    const userData = {
+      id: clerkUser.id,
+      email: clerkUser.emailAddresses[0]?.emailAddress || '',
+      fullName:
+        `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
+        null,
+      avatarUrl: clerkUser.imageUrl || null,
+      isActive: true,
+      isAdmin: false,
+      adminLevel: 0,
+      totalUseCases: 0,
+      totalTutorials: 0,
+      totalBlogs: 0,
+      preferences: {
+        theme: 'light' as const,
+        language: 'zh' as const,
+        currency: 'CNY' as const,
+        timezone: 'Asia/Shanghai',
+      },
+      country: null,
+      locale: 'zh',
+      lastLoginAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    const [newUser] = await ctx.db.insert(users).values(userData).returning()
+
+    ctx.logger.info('用户自动同步成功', {
+      userId,
+      email: newUser?.email,
+    })
+
+    return newUser
+  } catch (error) {
+    ctx.logger.error('用户自动同步失败', error as Error)
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: '用户同步失败，请稍后重试',
+    })
+  }
+}
 
 export const authRouter = createTRPCRouter({
   /**
    * 获取当前用户信息
+   * 如果用户不存在于数据库中，自动从Clerk同步
    */
   getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.query.users.findFirst({
-      where: eq(users.id, ctx.userId),
-    })
-
-    if (!user) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: '用户不存在',
-      })
-    }
-
+    const user = await ensureUserInDatabase(ctx, ctx.userId)
     return user
   }),
 
   /**
    * 检查认证状态
+   * 如果用户已认证但不存在于数据库中，自动同步
    */
   checkAuthStatus: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.userId) {
       return { isAuthenticated: false, user: null }
     }
 
-    const user = await ctx.db.query.users.findFirst({
-      where: eq(users.id, ctx.userId),
-    })
-
-    return {
-      isAuthenticated: true,
-      user,
-      isAdmin: Boolean(user?.isAdmin),
+    try {
+      const user = await ensureUserInDatabase(ctx, ctx.userId)
+      return {
+        isAuthenticated: true,
+        user,
+        isAdmin: Boolean(user?.isAdmin),
+      }
+    } catch (error) {
+      // If auto-sync fails, still return authenticated but without user data
+      ctx.logger.error('检查认证状态时同步用户失败', error as Error)
+      return {
+        isAuthenticated: true,
+        user: null,
+        isAdmin: false,
+      }
     }
   }),
 

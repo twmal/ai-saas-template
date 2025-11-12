@@ -16,19 +16,46 @@ export function verifyClerkWebhook(
   const webhookSecret = env.CLERK_WEBHOOK_SECRET
 
   if (!webhookSecret) {
+    logger.error('CLERK_WEBHOOK_SECRET环境变量未配置')
     throw new Error('CLERK_WEBHOOK_SECRET环境变量未配置')
   }
+
+  // Log the webhook secret format (first few chars only for security)
+  logger.info('Webhook secret配置检查', {
+    secretPrefix: webhookSecret.substring(0, 8),
+    secretLength: webhookSecret.length,
+    hasWhsecPrefix: webhookSecret.startsWith('whsec_'),
+  })
 
   // 获取Svix签名头
   const svixId = headers.get('svix-id')
   const svixTimestamp = headers.get('svix-timestamp')
   const svixSignature = headers.get('svix-signature')
 
+  logger.info('Svix签名头检查', {
+    hasSvixId: !!svixId,
+    hasSvixTimestamp: !!svixTimestamp,
+    hasSvixSignature: !!svixSignature,
+    svixId: svixId || '缺失',
+    svixTimestamp: svixTimestamp || '缺失',
+  })
+
   if (!svixId || !svixTimestamp || !svixSignature) {
-    throw new Error('缺少Svix签名头')
+    const missingHeaders: string[] = []
+    if (!svixId) missingHeaders.push('svix-id')
+    if (!svixTimestamp) missingHeaders.push('svix-timestamp')
+    if (!svixSignature) missingHeaders.push('svix-signature')
+
+    logger.error('缺少Svix签名头', { missingHeaders } as any)
+    throw new Error(`缺少Svix签名头: ${missingHeaders.join(', ')}`)
   }
 
   try {
+    logger.info('开始验证webhook签名', {
+      bodyLength: body.length,
+      bodyPreview: body.substring(0, 100),
+    })
+
     const webhook = new Webhook(webhookSecret)
     const event = webhook.verify(body, {
       'svix-id': svixId,
@@ -36,9 +63,25 @@ export function verifyClerkWebhook(
       'svix-signature': svixSignature,
     }) as WebhookEvent
 
+    logger.info('✅ Webhook签名验证成功', {
+      eventType: event.type,
+      eventId: (event as any).id,
+    })
+
     return event
   } catch (error) {
-    logger.error('Clerk webhook签名验证失败:', error as Error)
+    logger.error('❌ Clerk webhook签名验证失败', {
+      error: error instanceof Error ? error.message : String(error),
+      errorName: error instanceof Error ? error.name : '',
+      stack: error instanceof Error ? error.stack : undefined,
+      bodyLength: body.length,
+      secretLength: webhookSecret.length,
+    } as any)
+
+    // Re-throw with more context
+    if (error instanceof Error) {
+      throw new Error(`Webhook签名验证失败: ${error.message}`)
+    }
     throw new Error('Invalid webhook signature')
   }
 }

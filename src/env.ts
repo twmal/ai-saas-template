@@ -57,6 +57,15 @@ export const env = createEnv({
       .default('true')
       .transform(val => val === 'true'),
 
+    // Access Control - Whitelist of allowed user emails
+    ALLOWED_USER_EMAILS: z.string().optional(),
+
+    // n8n Integration
+    N8N_WEBHOOK_URL: z.string().url().optional(),
+    N8N_VIDEO_ANALYSIS_WEBHOOK_ID: z.string().optional(),
+    N8N_YOUTUBE_ANALYSIS_WEBHOOK_ID: z.string().optional(),
+    N8N_API_KEY: z.string().optional(),
+
     // Node environment
     NODE_ENV: z
       .enum(['development', 'test', 'production'])
@@ -132,6 +141,11 @@ export const env = createEnv({
     ENABLE_AI_FEATURES: process.env.ENABLE_AI_FEATURES,
     ENABLE_PAYMENT_FEATURES: process.env.ENABLE_PAYMENT_FEATURES,
     ENABLE_ADMIN_FEATURES: process.env.ENABLE_ADMIN_FEATURES,
+    ALLOWED_USER_EMAILS: process.env.ALLOWED_USER_EMAILS,
+    N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL,
+    N8N_VIDEO_ANALYSIS_WEBHOOK_ID: process.env.N8N_VIDEO_ANALYSIS_WEBHOOK_ID,
+    N8N_YOUTUBE_ANALYSIS_WEBHOOK_ID: process.env.N8N_YOUTUBE_ANALYSIS_WEBHOOK_ID,
+    N8N_API_KEY: process.env.N8N_API_KEY,
     NODE_ENV: process.env.NODE_ENV,
     DB_POOL_MAX: process.env.DB_POOL_MAX,
     DB_POOL_MIN: process.env.DB_POOL_MIN,
@@ -269,3 +283,6 @@ export const getSupportedLocales = () => {
 export const getDefaultLocale = () => {
   return env.NEXT_PUBLIC_DEFAULT_LOCALE
 }
+
+// Note: Whitelist functionality removed - all authenticated users have access
+// If you need access control in the future, implement subscription-based or role-based access
