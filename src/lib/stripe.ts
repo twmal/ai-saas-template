@@ -2,8 +2,8 @@ import { env } from '@/env'
 import { logger } from '@/lib/logger'
 import Stripe from 'stripe'
 
-// 初始化Stripe客户端
-export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+// 初始化Stripe客户端 (如果未配置密钥则使用虚拟实例)
+export const stripe = new Stripe(env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_build', {
   apiVersion: '2025-06-30.basil',
   typescript: true,
   appInfo: {
@@ -22,7 +22,7 @@ export function verifyStripeWebhook(
   body: string,
   signature: string
 ): Stripe.Event {
-  const endpointSecret = env.STRIPE_WEBHOOK_SECRET
+  const endpointSecret = env.STRIPE_WEBHOOK_SECRET || 'sk_test_dummy_webhook_secret'
 
   try {
     const event = stripe.webhooks.constructEvent(
