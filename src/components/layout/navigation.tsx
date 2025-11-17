@@ -125,29 +125,9 @@ export default function Navigation() {
       active: pathname === localePath('/') || pathname === `/${locale}`,
     },
     {
-      href: localePath('/blog'),
-      label: t('blogs'),
-      active: pathname.startsWith(localePath('/blog')),
-    },
-    {
-      href: localePath('/docs'),
-      label: t('docs'),
-      active: pathname.startsWith(localePath('/docs')),
-    },
-    {
-      href: localePath('/blocks'),
-      label: t('blocks'),
-      active: pathname.startsWith(localePath('/blocks')),
-    },
-    {
       href: localePath('/pricing'),
       label: t('pricing'),
       active: pathname.startsWith(localePath('/pricing')),
-    },
-    {
-      href: localePath('/contact'),
-      label: t('contact'),
-      active: pathname.startsWith(localePath('/contact')),
     },
   ]
 
